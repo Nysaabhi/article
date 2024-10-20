@@ -1,3 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nysa Crypto Article Feed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6d28d9;
+            --secondary-color: #10b981;
+            --text-color: #1f2937;
+            --text-secondary: #4b5563;
+            --border-color: #e5e7eb;
+            --background-color: #f3f4f6;
+            --card-background: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -87,6 +110,7 @@
             text-decoration: none;
             font-weight: 500;
             transition: background-color 0.3s ease;
+            cursor: pointer;
         }
 
         .read-more:hover {
@@ -112,6 +136,7 @@
         .article-stats {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 12px 20px;
             background-color: #f8fafc;
             border-top: 1px solid var(--border-color);
@@ -125,16 +150,56 @@
         }
 
         .stat i {
-            margin-right: 4px;
+            margin-right: 8px;
+            font-size: 16px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .full-article {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 20px;
         }
 
         @media (max-width: 640px) {
             .container {
                 padding: 0 10px;
-            }
-
-            .header h1 {
-                font-size: 24px;
             }
 
             .article-header {
@@ -170,11 +235,32 @@
                 font-size: 14px;
                 padding: 6px 12px;
             }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+            .article-stats {
+                flex-wrap: wrap;
+            }
+
+            .stat {
+                margin-right: 12px;
+                margin-bottom: 4px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container" id="article-container"></div>
+
+    <div id="articleModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="fullArticle" class="full-article"></div>
+        </div>
+    </div>
 
     <script>
         const articles = [
@@ -186,9 +272,10 @@
                 image: "https://i.postimg.cc/c19T41qj/Greek-and-Black-Vivid-Bold-Blocks-Electronics-and-Appliances-Banner.png",
                 title: "The Future of Decentralized Finance: Nysa's Perspective",
                 excerpt: "Explore the transformative potential of DeFi and how Nysa is contributing to this financial revolution. We delve into the latest trends, challenges, and opportunities in the world of decentralized finance.",
-                views: 15000,
+                fullContent: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
                 readTime: 5,
-                tags: ["DeFi", "Blockchain", "Crypto"]
+                tags: ["DeFi", "Blockchain", "Crypto"],
+                location: "Web4,World"
             },
             {
                 id: 2,
@@ -198,9 +285,10 @@
                 image: "https://i.postimg.cc/C5L74DfM/AD.png",
                 title: "Bitcoin's Surge: Analyzing the Latest Bull Run",
                 excerpt: "Bitcoin has reached new heights, breaking previous records. Our experts analyze the factors driving this surge and what it means for the future of cryptocurrency markets.",
-                views: 22000,
+                fullContent: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
                 readTime: 7,
-                tags: ["Bitcoin", "Market Analysis", "Cryptocurrency"]
+                tags: ["Bitcoin", "Market Analysis", "Cryptocurrency"],
+                location: "Web3"
             },
             {
                 id: 3,
@@ -210,17 +298,12 @@
                 image: "https://i.postimg.cc/6q3gYT7K/Black-and-White-Typographic-and-Modern-Phone-Brand-Facebook-Ad.png",
                 title: "The Rise of NFTs in the Art World",
                 excerpt: "Non-fungible tokens are revolutionizing the art market. Discover how artists and collectors are embracing this new technology and what it means for the future of digital ownership.",
-                views: 18500,
+                fullContent: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
                 readTime: 6,
-                tags: ["NFT", "Digital Art", "Blockchain"]
+                tags: ["NFT", "Digital Art", "Blockchain"],
+                location: "Virtual Reality"
             }
         ];
-
-        function formatNumber(num) {
-            if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-            if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-            return num.toString();
-        }
 
         function createArticleElement(article) {
             const articleElement = document.createElement('article');
@@ -237,13 +320,13 @@
                 <div class="article-content">
                     <h2 class="article-title">${article.title}</h2>
                     <p class="article-excerpt">${article.excerpt}</p>
-                    <a href="#" class="read-more">Read More</a>
+                    <a class="read-more" data-id="${article.id}">Read More</a>
                     <div class="article-tags">
                         ${article.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                     </div>
                 </div>
                 <div class="article-stats">
-                    <span class="stat"><i class="fas fa-eye"></i> ${formatNumber(article.views)} views</span>
+                    <span class="stat"><i class="fas fa-map-marker-alt"></i> ${article.location}</span>
                     <span class="stat"><i class="fas fa-clock"></i> ${article.readTime} min read</span>
                 </div>
             `;
@@ -259,7 +342,37 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', renderArticles);
+        document.addEventListener('DOMContentLoaded', () => {
+            renderArticles();
+
+            const modal = document.getElementById('articleModal');
+            const fullArticle = document.getElementById('fullArticle');
+            const closeBtn = document.getElementsByClassName('close')[0];
+
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('read-more')) {
+                    const articleId = e.target.getAttribute('data-id');
+                    const article = articles.find(a => a.id == articleId);
+                    fullArticle.innerHTML = `
+                        <h2>${article.title}</h2>
+                        <p><i class="fas fa-map-marker-alt"></i> ${article.location}</p>
+                        <p>${article.fullContent}</p>
+                    `;
+                    modal.style.display = 'block';
+                }
+            });
+
+            closeBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
+
+            window.onclick = (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
+</html>
